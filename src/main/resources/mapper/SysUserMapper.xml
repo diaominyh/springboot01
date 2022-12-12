@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.diaomin.springboot01.dao.SysUserMapper">
+
+    <select id="selectByAccount" resultType="SysUser">
+        select * from t_sys_user u
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="account != null">
+                and u.account = #{account}
+            </if>
+        </trim>
+    </select>
+
+    <resultMap type="SysUser" id="userList">
+        <result property="id" column="id"/>
+        <result property="account" column="account"/>
+        <result property="realName" column="realName"/>
+        <result property="phone" column="phone"/>
+        <result property="birthday" column="birthday"/>
+        <result property="sex" column="sex"/>
+        <result property="roleId" column="roleId"/>
+        <result property="roleIdName" column="roleName"/>
+    </resultMap>
+
+    <select id="selectUserList" resultMap="userList">
+        select u.*,r.roleName
+        from t_sys_user u,t_sys_role r
+        where u.roleId = r.id
+        <if test="roleId != null">
+            and u.roleId = #{roleId}
+        </if>
+        <if test="realName != null and realName != ''">
+            and u.realName like CONCAT ('%',#{realName},'%')
+        </if>
+        order by createdTime DESC limit #{pageBegin},#{pageSize}
+    </select>
+
+    <select id="selectCount" resultType="int">
+        select count(1) as count
+        from t_sys_user u,t_sys_role r
+        where u.roleId = r.id
+        <if test="roleId != null">
+            and u.roleId = #{roleId}
+        </if>
+        <if test="realName != null and realName != ''">
+            and u.realName like CONCAT ('%',#{realName},'%')
+        </if>
+    </select>
+
+    <select id="selectById" resultType="SysUser">
+        select u.*,r.roleName as roleIdName from t_sys_user u,t_sys_role r
+        where u.id=#{id} and u.roleId = r.id
+    </select>
+
+
+    <insert id="add" parameterType="SysUser">
+        insert into t_sys_user (account,realName,password,sex,birthday,phone,
+        address,roleId,createdUserId,createdTime,idPicPath,workPicPath)
+        values (#{account},#{realName},#{password},#{sex},#{birthday},#{phone},
+        #{address},#{roleId},#{createdUserId},#{createdTime},#{idPicPath},#{workPicPath})
+    </insert>
+
+    <update id="update" parameterType="SysUser">
+        update t_sys_user
+        <trim prefix="set" suffixOverrides="," suffix="where id = #{id}">
+            <if test="account != null">account=#{account},</if>
+            <if test="realName != null">realName=#{realName},</if>
+            <if test="password != null">password=#{password},</if>
+            <if test="sex != null">sex=#{sex},</if>
+            <if test="birthday != null">birthday=#{birthday},</if>
+            <if test="phone != null">phone=#{phone},</if>
+            <if test="address != null">address=#{address},</if>
+            <if test="roleId != null">roleId=#{roleId},</if>
+            <if test="updatedUserId != null">updatedUserId=#{updatedUserId},</if>
+            <if test="updatedTime != null">updatedTime=#{updatedTime},</if>
+            <!--<if test="idPicPath != null">idPicPath=#{idPicPath},</if>-->
+         <!--   <if test="workPicPath != null">workPicPath=#{workPicPath},</if>-->
+        </trim>
+    </update>
+
+    <update id="updatePwd">
+        update t_sys_user set password=#{password} where id=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="Integer">
+        delete from t_sys_user where id=#{id}
+    </delete>
+</mapper>
